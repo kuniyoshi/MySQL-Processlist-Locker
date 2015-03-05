@@ -54,7 +54,7 @@ END_HEADER
 
 my $body = <<'END_BODY';
 package main;
-my $locker = MySQL::Processlist::Locker->new;
+my $locker = MySQL::Processlist::Locker->new( stream => "dbi" );
 $locker->loop;
 
 END_BODY

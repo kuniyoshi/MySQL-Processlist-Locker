@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-package MySQL::Processlist::Stream::Dbi;
+package MySQL::Processlist::Locker::Stream::Dbi;
 use DBI;
 use Carp ( );
 

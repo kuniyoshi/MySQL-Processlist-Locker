@@ -29,7 +29,7 @@ sub __dump_lockers {
     my @lockers = @_;
 
     for my $locker_ref ( @lockers ) {
-        say Data::Dumper->new( [ $locker_ref ] )->Terse( 1 )->Sortkeys( 1 )->Useqq( 1 )->Indent( 0 )->Dump;
+        warn Data::Dumper->new( [ $locker_ref ] )->Terse( 1 )->Sortkeys( 1 )->Useqq( 1 )->Indent( 0 )->Dump;
     }
 }
 
@@ -73,7 +73,7 @@ sub loop {
 
     while ( $can_continue && $count++ < $max_iteration ) {
         $stream->execute( $time_threshold );
-        my $lock_count = 0;
+        my $lock_count      = 0;
         my $max_locked_time = 0;
         my @ids;
 
@@ -90,7 +90,7 @@ sub loop {
                 if $process_ref->{STATE} eq "Locked";
 
             if ( !exists $process{ $id } ) {
-                $process{ $id } = MySQL::Process::Locker::Filter->new(
+                $process{ $id } = MySQL::Processlist::Locker::Filter->new(
                     %{ $process_ref },
                     lock_threshold => $lock_threshold,
                     time_threshold => $time_threshold,
@@ -107,13 +107,14 @@ sub loop {
                 if !grep { $_ == $process_ref->{ID} } @ids;
             next
                 if $process_ref->{TIME} < $max_locked_time;
-            $process_ref->{locks} = $lock_count;
+
+            $process_ref->{locks}           = $lock_count;
             $process_ref->{max_locked_time} = $max_locked_time;
         }
 
         delete @process{ grep { my $id = $_; !grep { $_ == $id } @ids } keys %process };
 
-        if ( my @lockers = MySQL::Process::Locker::Filter::flush( ) ) {
+        if ( my @lockers = MySQL::Processlist::Locker::Filter::flush( ) ) {
             $self->detected_at( @lockers );
         }
 

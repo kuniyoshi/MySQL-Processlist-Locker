@@ -5,7 +5,7 @@ use warnings;
 
 use strict;
 use warnings;
-package MySQL::Processlist::Stream::Dbi;
+package MySQL::Processlist::Locker::Stream::Dbi;
 use DBI;
 use Carp ( );
 
@@ -151,6 +151,8 @@ use Readonly;
 use List::Util qw( max );
 
 
+# ABSTRACT: detect locker sql on mysql from show processlist.
+
 our $VERSION = "0.000";
 
 Readonly my %DEFAULT => (
@@ -256,7 +258,7 @@ sub loop {
 
         delete @process{ grep { my $id = $_; !grep { $_ == $id } @ids } keys %process };
 
-        if ( my @lockers = MySQL::Process::Locker::Filter::flush( ) ) {
+        if ( my @lockers = MySQL::Processlist::Locker::Filter::flush( ) ) {
             $self->detected_at( @lockers );
         }
 
@@ -268,6 +270,6 @@ sub loop {
 
 
 package main;
-my $locker = MySQL::Processlist::Locker->new;
+my $locker = MySQL::Processlist::Locker->new( stream => "dbi" );
 $locker->loop;
 

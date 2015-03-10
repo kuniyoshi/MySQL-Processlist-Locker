@@ -91,7 +91,7 @@ sub __remap_to_uc_keys {
     my %hash = @_
         or return;
     @hash{ map { uc } keys %hash } = values %hash;
-    delete @hash{ map { lc } keys %hash };
+    delete @hash{ grep { m{[a-z]} } keys %hash };
     return %hash;
 }
 
@@ -112,9 +112,11 @@ sub fetch_command {
         $hashref = { __remap_to_uc_keys( %{ $hashref } ) };
 
         next
-            if $hashref->{COMMAND} eq "Query" && $hashref->{INFO} eq "SHOW FULL PROCESSLIST";
-        next
             if first { $_ eq $hashref->{COMMAND} } qw( Sleep Connect );
+        next
+            if $hashref->{COMMAND} eq "Query" && $hashref->{INFO} && $hashref->{INFO} eq "SHOW FULL PROCESSLIST";
+        next
+            if !defined $hashref->{STATE};
 
         $row_ref = $hashref;
     }

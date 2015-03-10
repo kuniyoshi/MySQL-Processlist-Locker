@@ -61,7 +61,7 @@ our $lock_threshold ||= 10;
 
 my $locker = MySQL::Processlist::Locker->new(
     interval       => $interval,
-    iteration      => $iteration,
+    max_iteration  => $iteration,
     time_threshold => $time_threshold,
     lock_threshold => $lock_threshold,
     stream         => "dbi",

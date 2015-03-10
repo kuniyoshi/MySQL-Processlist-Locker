@@ -29,7 +29,7 @@ sub __dump_lockers {
     my @lockers = @_;
 
     for my $locker_ref ( @lockers ) {
-        warn Data::Dumper->new( [ $locker_ref ] )->Terse( 1 )->Sortkeys( 1 )->Useqq( 1 )->Indent( 0 )->Dump;
+        print Data::Dumper->new( [ $locker_ref ] )->Terse( 1 )->Sortkeys( 1 )->Useqq( 1 )->Indent( 0 )->Dump, "\n";
     }
 }
 

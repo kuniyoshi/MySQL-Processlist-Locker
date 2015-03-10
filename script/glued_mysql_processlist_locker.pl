@@ -39,7 +39,7 @@ sub has_mysql_processlist_table {
     ( my $sth = $self->{dbh}->prepare( "SHOW TABLES" ) )->execute;
     my @tables = map { $_->[0] } @{ $sth->fetchall_arrayref };
 
-    return $self->{_has_mysql_processlist_table} = first { $_ eq "PROCESSLIST" } @tables;
+    return $self->{_has_mysql_processlist_table} = first { uc( $_ ) eq "PROCESSLIST" } @tables;
 }
 
 sub prepare_table {
@@ -92,9 +92,21 @@ sub execute {
     }
 }
 
+sub __remap_to_uc_keys {
+    my %hash = @_
+        or return;
+    @hash{ map { uc } keys %hash } = values %hash;
+    delete @hash{ map { lc } keys %hash };
+    return %hash;
+}
+
 sub fetch_table {
     my $self = shift;
-    return $self->{sth}->fetchrow_hashref;
+    my $href = $self->{sth}->fetchrow_hashref;
+    return
+        unless $href;
+    $href = { __remap_to_uc_keys( %{ $href } ) };
+    return $href;
 }
 
 sub fetch_command {
@@ -102,10 +114,13 @@ sub fetch_command {
     my $row_ref;
 
     while ( !$row_ref && ( my $hashref = $self->{sth}->fetchrow_hashref ) ) {
+        $hashref = { __remap_to_uc_keys( %{ $hashref } ) };
+
         next
-            if $hashref->{Command} eq "Query" && $hashref->{Info} eq "SHOW FULL PROCESSLIST";
+            if $hashref->{COMMAND} eq "Query" && $hashref->{INFO} eq "SHOW FULL PROCESSLIST";
         next
-            if first { $_ eq $hashref->{Command} } qw( Sleep Connect );
+            if first { $_ eq $hashref->{COMMAND} } qw( Sleep Connect );
+
         $row_ref = $hashref;
     }
 
@@ -249,7 +264,7 @@ sub __dump_lockers {
     my @lockers = @_;
 
     for my $locker_ref ( @lockers ) {
-        warn Data::Dumper->new( [ $locker_ref ] )->Terse( 1 )->Sortkeys( 1 )->Useqq( 1 )->Indent( 0 )->Dump;
+        print Data::Dumper->new( [ $locker_ref ] )->Terse( 1 )->Sortkeys( 1 )->Useqq( 1 )->Indent( 0 )->Dump, "\n";
     }
 }
 

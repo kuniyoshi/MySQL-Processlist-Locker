@@ -103,6 +103,8 @@ sub fetch_command {
 
     while ( !$row_ref && ( my $hashref = $self->{sth}->fetchrow_hashref ) ) {
         next
+            if $hashref->{Command} eq "Query" && $hashref->{Info} eq "SHOW FULL PROCESSLIST";
+        next
             if first { $_ eq $hashref->{Command} } qw( Sleep Connect );
         $row_ref = $hashref;
     }

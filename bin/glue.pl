@@ -45,7 +45,7 @@ for my $file ( sort { scalar( File::Spec->splitdir( $b ) ) <=> scalar( File::Spe
 }
 
 my $header = <<'END_HEADER';
-#!/usr/bin/perl
+#!/usr/bin/perl -s
 use 5.10.0;
 use strict;
 use warnings;
@@ -54,7 +54,18 @@ END_HEADER
 
 my $body = <<'END_BODY';
 package main;
-my $locker = MySQL::Processlist::Locker->new( stream => "dbi" );
+our $interval       ||= 2;
+our $iteration      ||= 5;
+our $time_threshold ||= 2;
+our $lock_threshold ||= 10;
+
+my $locker = MySQL::Processlist::Locker->new(
+    interval       => $interval,
+    iteration      => $iteration,
+    time_threshold => $time_threshold,
+    lock_threshold => $lock_threshold,
+    stream         => "dbi",
+);
 $locker->loop;
 
 END_BODY
